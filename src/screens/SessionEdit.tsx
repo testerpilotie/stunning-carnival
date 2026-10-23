@@ -3,7 +3,7 @@ import { db } from '../db/db';
 import type { CashSession, Kind, Session, TournamentSession } from '../db/schema';
 import { TOURNAMENT_FORMATS } from '../db/schema';
 import { createSession, deleteSession, lastOfKind, saveSession } from '../lib/actions';
-import { cashBuyInTotal, hoursPlayed, resultEur, resultLocal, sum } from '../lib/calc';
+import { addOnTotal, cashBuyInTotal, hoursPlayed, rebuyTotal, resultEur, resultLocal, sum } from '../lib/calc';
 import { useData } from '../lib/data';
 import { duration, fromLocalInput, money, signed, toLocalInput, tone } from '../lib/format';
 import { back, go } from '../lib/router';
@@ -32,7 +32,7 @@ function blank(kind: Kind): Session {
   };
   return kind === 'cash'
     ? { ...base, kind: 'cash', sb: 1, bb: 2, buyIns: [{ at: start, amount: 200 }], cashOut: 0 }
-    : { ...base, kind: 'tournament', eventName: '', buyIn: 0, fee: 0, entries: 1, addOns: [], bountiesWon: 0, prize: 0, formats: [] };
+    : { ...base, kind: 'tournament', eventName: '', buyIn: 0, fee: 0, entries: 1, rebuys: [], addOns: [], bountiesWon: 0, prize: 0, formats: [] };
 }
 
 const breakMinutes = (s: Session) => Math.round(sum(s.breaks.map((b) => ((b.to ?? s.endedAt ?? Date.now()) - b.from) / 60_000)));
@@ -158,12 +158,20 @@ export function SessionEdit({ id, kind }: { id?: number; kind?: Kind }) {
           <div className="grid2">
             <MoneyField label="Buy-in" value={s.buyIn} onChange={(v) => set({ buyIn: v ?? 0 })} currency={s.currency} />
             <MoneyField label="Fee" value={s.fee} onChange={(v) => set({ fee: v ?? 0 })} currency={s.currency} />
-            <IntField label="Entries" value={s.entries} onChange={(v) => set({ entries: Math.max(1, v ?? 1) })} hint="1 + re-entries" />
+            <IntField label="Entries" value={s.entries} onChange={(v) => set({ entries: Math.max(1, v ?? 1) })} hint="1 + re-entries (with fee)" />
+            <MoneyField
+              label="Rebuys total"
+              value={rebuyTotal(s)}
+              onChange={(v) => set({ rebuys: v ? [{ at: s.startedAt, amount: v }] : [] })}
+              currency={s.currency}
+              hint={(s.rebuys?.length ?? 0) > 1 ? `${s.rebuys!.length} rebuys; editing replaces them with one total.` : 'No fee on rebuys.'}
+            />
             <MoneyField
               label="Add-ons total"
-              value={sum(s.addOns.map((a) => a.amount))}
+              value={addOnTotal(s)}
               onChange={(v) => set({ addOns: v ? [{ at: s.startedAt, amount: v }] : [] })}
               currency={s.currency}
+              hint={s.addOns.length > 1 ? `${s.addOns.length} add-ons; editing replaces them with one total.` : undefined}
             />
           </div>
           {!live && (

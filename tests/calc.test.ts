@@ -67,3 +67,22 @@ describe('parseAmount', () => {
     expect(parseAmount(raw)).toBe(want);
   });
 });
+
+describe('tournament rebuys', () => {
+  it('rebuys cost their full amount with no fee', () => {
+    const t = mtt({ buyIn: 90, fee: 10, rebuys: [{ at: T0, amount: 90 }, { at: T0, amount: 90 }], addOns: [{ at: T0, amount: 90 }] });
+    // one entry 100 + two rebuys 180 + add-on 90
+    expect(tournamentCost(t)).toBe(370);
+    expect(resultLocal(t)).toBe(-370);
+  });
+  it('mixes re-entries and rebuys', () => {
+    const t = mtt({ entries: 2, rebuys: [{ at: T0, amount: 50 }], prize: 600 });
+    expect(tournamentCost(t)).toBe(250);
+    expect(resultLocal(t)).toBe(350);
+  });
+  it('sessions logged before rebuys existed still work', () => {
+    const t = mtt({ entries: 1 });
+    delete t.rebuys;
+    expect(tournamentCost(t)).toBe(100);
+  });
+});

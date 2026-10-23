@@ -35,7 +35,7 @@ export function Done({ id }: { id: number }) {
         {s.kind === 'tournament' && s.finish && (
           <Tile label="Finish" value={`${s.finish}${s.fieldSize ? ` / ${s.fieldSize}` : ''}`} note={s.fieldSize ? `Top ${percent(s.finish / s.fieldSize)} of the field` : undefined} />
         )}
-        {s.kind === 'tournament' && <Tile label="Invested" value={money(investedEur(s))} note={`${s.entries} ${s.entries === 1 ? 'entry' : 'entries'}`} />}
+        {s.kind === 'tournament' && <Tile label="Invested" value={money(investedEur(s))} note={[`${s.entries} ${s.entries === 1 ? 'entry' : 'entries'}`, s.rebuys?.length ? `${s.rebuys.length} ${s.rebuys.length === 1 ? 'rebuy' : 'rebuys'}` : '', s.addOns.length ? `${s.addOns.length} add-on${s.addOns.length === 1 ? '' : 's'}` : ''].filter(Boolean).join(' · ')} />}
       </div>
       {backupDue(settings, sessions.length, 7) && <BackupBanner settings={settings} text="Good moment for a backup — one tap, saves to Files / Drive." />}
       <div className="row">

@@ -47,8 +47,13 @@ export interface TournamentSession extends SessionBase {
   buyIn: number;
   /** Rake part of one entry. */
   fee: number;
-  /** 1 + re-entries. */
+  /** 1 + re-entries. Each entry costs buyIn + fee. */
   entries: number;
+  /**
+   * Rebuys within an entry (rebuy-format tournaments). The whole amount goes to the
+   * prize pool, so no fee. Missing on sessions logged before rebuys were tracked.
+   */
+  rebuys?: MoneyEvent[];
   addOns: MoneyEvent[];
   bountiesWon: number;
   prize: number;
@@ -89,7 +94,7 @@ export interface Settings {
 }
 
 export const DEFAULT_GAMES = ['NLH', 'PLO', 'PLO5', 'Mixed', 'Short Deck', 'Stud'];
-export const TOURNAMENT_FORMATS = ['Freezeout', 'Re-entry', 'Turbo', 'Deepstack', 'Bounty', 'Satellite', 'Main event', 'Side event'];
+export const TOURNAMENT_FORMATS = ['Freezeout', 'Re-entry', 'Rebuy', 'Turbo', 'Deepstack', 'Bounty', 'Satellite', 'Main event', 'Side event'];
 export const CURRENCIES = ['EUR', 'USD', 'GBP', 'SEK', 'NOK', 'DKK', 'CZK', 'PLN', 'HUF', 'CHF'];
 
 export const DEFAULT_SETTINGS: Settings = {

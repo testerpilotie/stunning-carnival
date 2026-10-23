@@ -135,3 +135,12 @@ describe('bankroll', () => {
     expect(recentMedian([])).toBeUndefined();
   });
 });
+
+describe('tournamentStats with rebuys', () => {
+  it('counts rebuys in invested and ROI', () => {
+    const s = tournamentStats([mtt({ rebuys: [{ at: T0, amount: 100 }], prize: 400 })]);
+    expect(s.invested).toBe(200);
+    expect(s.roi).toBeCloseTo(1);
+    expect(s.rebuys).toBe(1);
+  });
+});

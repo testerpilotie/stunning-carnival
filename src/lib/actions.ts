@@ -64,9 +64,24 @@ export const undoReEntry = (id: number) =>
     if (s.kind === 'tournament' && s.entries > 1) s.entries -= 1;
   });
 
+export const addRebuy = (id: number, amount: number) =>
+  mutate(id, (s) => {
+    if (s.kind === 'tournament') (s.rebuys ??= []).push(ev(amount));
+  });
+
+export const undoRebuy = (id: number) =>
+  mutate(id, (s) => {
+    if (s.kind === 'tournament') s.rebuys?.pop();
+  });
+
 export const addAddOn = (id: number, amount: number) =>
   mutate(id, (s) => {
     if (s.kind === 'tournament') s.addOns.push(ev(amount));
+  });
+
+export const undoAddOn = (id: number) =>
+  mutate(id, (s) => {
+    if (s.kind === 'tournament') s.addOns.pop();
   });
 
 export const addBounty = (id: number, amount: number) =>

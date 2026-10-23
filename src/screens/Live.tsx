@@ -7,21 +7,24 @@ import {
   addBounty,
   addBuyIn,
   addReEntry,
+  addRebuy,
   addStackCheck,
   endCash,
   endTournament,
   toggleBreak,
+  undoAddOn,
   undoBuyIn,
   undoReEntry,
+  undoRebuy,
 } from '../lib/actions';
-import { cashBuyInTotal, hoursPlayed, onBreak, tournamentCost } from '../lib/calc';
+import { addOnTotal, cashBuyInTotal, hoursPlayed, onBreak, rebuyTotal, tournamentCost } from '../lib/calc';
 import { headline, useData } from '../lib/data';
 import { clock, money, signed, time, tone } from '../lib/format';
 import { go } from '../lib/router';
 import { LineChart } from '../components/charts/LineChart';
 import { AmountSheet, IntField, MoneyField, Sheet, Top, useNow } from '../components/ui';
 
-type Dialog = null | 'rebuy' | 'stack' | 'cashout' | 'addon' | 'bounty' | 'bust' | 'cashed';
+type Dialog = null | 'rebuy' | 'stack' | 'cashout' | 'mttRebuy' | 'addon' | 'bounty' | 'bust' | 'cashed';
 
 function useUndo() {
   const [toast, setToast] = useState<{ text: string; undo: () => void } | null>(null);
@@ -136,8 +139,37 @@ export function Live({ id }: { id: number }) {
           }}
         />
       )}
+      {dialog === 'mttRebuy' && s.kind === 'tournament' && (
+        <AmountSheet
+          title="Rebuy"
+          label="Rebuy cost (no fee)"
+          currency={s.currency}
+          confirm="Add rebuy"
+          initial={s.rebuys?.length ? s.rebuys[s.rebuys.length - 1].amount : s.buyIn}
+          quick={[...(s.rebuys ?? []).map((r) => r.amount), s.buyIn]}
+          onClose={close}
+          onSubmit={(v) => {
+            addRebuy(id, v);
+            undo.show(`Rebuy ${money(v, s.currency)} added`, () => undoRebuy(id));
+            close();
+          }}
+        />
+      )}
       {dialog === 'addon' && s.kind === 'tournament' && (
-        <AmountSheet title="Add-on" label="Add-on cost" currency={s.currency} confirm="Add" quick={[s.buyIn + s.fee, ...s.addOns.map((a) => a.amount)]} onClose={close} onSubmit={(v) => { addAddOn(id, v); close(); }} />
+        <AmountSheet
+          title="Add-on"
+          label="Add-on cost"
+          currency={s.currency}
+          confirm="Add add-on"
+          initial={s.addOns.length ? s.addOns[s.addOns.length - 1].amount : undefined}
+          quick={[...s.addOns.map((a) => a.amount), s.buyIn, s.buyIn + s.fee]}
+          onClose={close}
+          onSubmit={(v) => {
+            addAddOn(id, v);
+            undo.show(`Add-on ${money(v, s.currency)} added`, () => undoAddOn(id));
+            close();
+          }}
+        />
       )}
       {dialog === 'bounty' && s.kind === 'tournament' && (
         <AmountSheet title="Bounty won" label="Bounty amount" currency={s.currency} confirm="Add" onClose={close} onSubmit={(v) => { addBounty(id, v); close(); }} />
@@ -191,6 +223,7 @@ function CashPanel({ s, lastStack, setDialog, onRebuy }: { s: CashSession; lastS
 }
 
 function TournamentPanel({ s, lastStack, setDialog, onReEntry }: { s: TournamentSession; lastStack?: number; setDialog: (d: Dialog) => void; onReEntry: () => void }) {
+  const rebuys = s.rebuys?.length ?? 0;
   return (
     <>
       <div className="live-numbers">
@@ -207,15 +240,18 @@ function TournamentPanel({ s, lastStack, setDialog, onReEntry }: { s: Tournament
           <div className="value">{lastStack !== undefined ? lastStack.toLocaleString('fi-FI') : money(s.bountiesWon, s.currency)}</div>
         </div>
       </div>
-      <div className="grid3" style={{ marginBottom: 10 }}>
+      <div className="grid2" style={{ marginBottom: 10 }}>
         <button className="btn huge" onClick={() => setDialog('stack')}>
           Stack<small>chips</small>
         </button>
         <button className="btn huge" onClick={onReEntry}>
-          Re-entry<small>{money(s.buyIn + s.fee, s.currency)}</small>
+          Re-entry<small>{money(s.buyIn + s.fee, s.currency)} incl. fee</small>
+        </button>
+        <button className="btn huge" onClick={() => setDialog('mttRebuy')}>
+          Rebuy<small>{rebuys ? `${rebuys} so far · ${money(rebuyTotal(s), s.currency)}` : 'enter cost, no fee'}</small>
         </button>
         <button className="btn huge" onClick={() => setDialog('addon')}>
-          Add-on<small>{s.addOns.length ? `${s.addOns.length} so far` : 'cost'}</small>
+          Add-on<small>{s.addOns.length ? `${s.addOns.length} so far · ${money(addOnTotal(s), s.currency)}` : 'enter cost'}</small>
         </button>
       </div>
       <div className="grid3" style={{ marginBottom: 10 }}>

@@ -137,6 +137,7 @@ export function bbPerHour(sessions: CashSession[]): number | undefined {
 export interface TournamentStats {
   count: number;
   entries: number;
+  rebuys: number;
   invested: number;
   result: number;
   roi: number | undefined;
@@ -160,6 +161,7 @@ export function tournamentStats(ts: TournamentSession[]): TournamentStats {
   return {
     count: ts.length,
     entries: sum(ts.map((t) => t.entries)),
+    rebuys: sum(ts.map((t) => t.rebuys?.length ?? 0)),
     invested,
     result,
     roi: invested > 0 ? result / invested : undefined,

@@ -365,7 +365,7 @@ function Tournaments({ ts, venueById }: { ts: TournamentSession[]; venueById: Ma
         <Tile label="Final tables" value={String(st.finalTables)} note={st.wins ? `${st.wins} ${st.wins === 1 ? 'win' : 'wins'}` : `top 9 finishes`} />
         <Tile label="Avg finish" value={st.avgFinishPct !== undefined ? `Top ${percent(st.avgFinishPct)}` : '–'} note="lower is better; 50% = average" />
         <Tile label="Biggest cash" value={moneyRound(st.biggestCash)} />
-        <Tile label="Avg buy-in" value={moneyRound(st.avgBuyIn)} note={`re-entry rate ${number(Math.round((st.entries / st.count) * 100) / 100)}×`} />
+        <Tile label="Avg buy-in" value={moneyRound(st.avgBuyIn)} note={`re-entry rate ${number(Math.round((st.entries / st.count) * 100) / 100)}×${st.rebuys ? ` · ${st.rebuys} rebuys` : ''}`} />
         <Tile label="Bounties won" value={moneyRound(st.bounties)} />
       </div>
       {bands.length > 0 && (

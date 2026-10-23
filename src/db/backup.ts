@@ -1,6 +1,6 @@
 import { db, getSettings, updateSettings } from './db';
 import type { Session, Settings, Transaction, Venue } from './schema';
-import { hoursPlayed, invested, resultEur, resultLocal, returned, stakeLabel } from '../lib/calc';
+import { addOnTotal, hoursPlayed, invested, rebuyTotal, resultEur, resultLocal, returned, stakeLabel } from '../lib/calc';
 import { date, time } from '../lib/format';
 
 export interface Backup {
@@ -94,7 +94,7 @@ export async function exportCsv(): Promise<void> {
   const dec = (n: number | undefined) => (n === undefined ? '' : String(Math.round(n * 100) / 100).replace('.', ','));
   const head = [
     'Date', 'Start', 'End', 'Type', 'Venue', 'City', 'Country', 'Game', 'Stakes / Event', 'Currency', 'FX to EUR',
-    'Hours', 'Invested', 'Returned', 'Result', 'Result EUR', 'Entries', 'Finish', 'Field', 'Expenses', 'Tags', 'Notes',
+    'Hours', 'Invested', 'Returned', 'Result', 'Result EUR', 'Entries', 'Rebuys', 'Add-ons', 'Finish', 'Field', 'Expenses', 'Tags', 'Notes',
   ];
   const rows = sessions.map((s) => {
     const v = s.venueId ? venues.get(s.venueId) : undefined;
@@ -102,6 +102,7 @@ export async function exportCsv(): Promise<void> {
       date(s.startedAt), time(s.startedAt), s.endedAt ? time(s.endedAt) : '', s.kind, v?.name, v?.city, v?.country, s.game,
       s.kind === 'cash' ? stakeLabel(s) : s.eventName, s.currency, dec(s.fxToEur), dec(hoursPlayed(s)), dec(invested(s)),
       dec(returned(s)), dec(resultLocal(s)), dec(resultEur(s)), s.kind === 'tournament' ? s.entries : '',
+      s.kind === 'tournament' ? dec(rebuyTotal(s)) : '', s.kind === 'tournament' ? dec(addOnTotal(s)) : '',
       s.kind === 'tournament' ? s.finish : '', s.kind === 'tournament' ? s.fieldSize : '', dec(s.expenses), s.tags.join(', '), s.notes,
     ];
   });

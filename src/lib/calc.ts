@@ -26,9 +26,12 @@ export function cashBuyInTotal(s: CashSession): number {
   return sum(s.buyIns.map((b) => b.amount));
 }
 
-/** Total cost of a tournament in its own currency: every entry's buy-in + fee, plus add-ons. */
+export const rebuyTotal = (s: TournamentSession) => sum((s.rebuys ?? []).map((r) => r.amount));
+export const addOnTotal = (s: TournamentSession) => sum(s.addOns.map((a) => a.amount));
+
+/** Total cost of a tournament in its own currency: every entry's buy-in + fee, plus rebuys and add-ons. */
 export function tournamentCost(s: TournamentSession): number {
-  return s.entries * (s.buyIn + s.fee) + sum(s.addOns.map((a) => a.amount));
+  return s.entries * (s.buyIn + s.fee) + rebuyTotal(s) + addOnTotal(s);
 }
 
 /** Money put at risk, in the session's own currency. */

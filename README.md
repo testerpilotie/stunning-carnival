@@ -5,7 +5,7 @@ An offline-first web app (PWA) for logging live cash games and tournaments from 
 ## What it does
 
 - **Fast logging.** Start a session in two taps: venue, game, stakes and buy-in are prefilled from last time. While live there are big buttons for rebuy (same amount, one tap, with undo), stack check, break, and cash out. For tournaments: re-entry, add-on, bounty, busted / cashed. Every tap is saved, so closing the app or rebooting the phone loses nothing.
-- **Tournaments first-class.** Buy-in split into prize pool and fee, re-entries, add-ons, bounties, finish position vs field size, guarantee, and format tags.
+- **Tournaments first-class.** Buy-in split into prize pool and fee, re-entries (buy-in + fee each), rebuys (cost you enter, no fee), add-ons, bounties, finish position vs field size, guarantee, and format tags.
 - **Stats.**
   - €/h, big blinds per hour, and a 95% confidence interval on your true hourly rate. It tells you whether your sample can already separate a winner from a loser.
   - Max downswing and its dates, plus a distance-from-peak chart.

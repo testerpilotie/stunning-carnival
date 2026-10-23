@@ -109,6 +109,7 @@ export function StartSession({ kind }: { kind: Kind }) {
             buyIn: tBuyIn ?? 0,
             fee: fee ?? 0,
             entries: 1,
+            rebuys: [],
             addOns: [],
             bountiesWon: 0,
             prize: 0,
