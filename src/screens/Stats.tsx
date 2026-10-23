@@ -71,7 +71,10 @@ export function Stats() {
   const { sessions, venues, venueById, loaded } = useData();
   const [f, setF] = useState<Filters>(() => {
     try {
-      return { ...EMPTY, ...JSON.parse(sessionStorage.getItem('felt-filters') ?? '{}') };
+      const saved: Filters = { ...EMPTY, ...JSON.parse(sessionStorage.getItem('felt-filters') ?? '{}') };
+      // Drop a remembered buy-in band that no longer exists.
+      if (saved.band && !BUY_IN_BANDS.some((b) => b.label === saved.band)) saved.band = '';
+      return saved;
     } catch {
       return EMPTY;
     }
@@ -109,8 +112,8 @@ export function Stats() {
         <Select value={f.range} on={(range) => update({ range: range as Range })} def="all" options={[
           ['all', 'All time'], ['30', 'Last 30 days'], ['90', 'Last 90 days'], ['ytd', 'This year'], ['365', 'Last 12 months'], ['lastyear', 'Last year'],
         ]} />
+        {options.venues.length > 0 && <Select value={f.venue} on={(venue) => update({ venue })} def="" options={[['', 'All venues'], ...options.venues.map((v) => [String(v.id), v.name] as [string, string])]} />}
         <Select value={f.kind} on={(kind) => update({ kind: kind as Filters['kind'], stake: '', band: '' })} def="all" options={[['all', 'Cash + MTT'], ['cash', 'Cash only'], ['tournament', 'Tournaments only']]} />
-        {options.venues.length > 1 && <Select value={f.venue} on={(venue) => update({ venue })} def="" options={[['', 'All venues'], ...options.venues.map((v) => [String(v.id), v.name] as [string, string])]} />}
         {options.games.length > 1 && <Select value={f.game} on={(game) => update({ game })} def="" options={[['', 'All games'], ...options.games.map((g) => [g, g] as [string, string])]} />}
         {f.kind !== 'tournament' && options.stakes.length > 1 && <Select value={f.stake} on={(stake) => update({ stake })} def="" options={[['', 'All stakes'], ...options.stakes.map((s) => [s, s] as [string, string])]} />}
         {f.kind !== 'cash' && <Select value={f.band} on={(band) => update({ band })} def="" options={[['', 'All buy-ins'], ...BUY_IN_BANDS.map((b) => [b.label, b.label] as [string, string])]} />}

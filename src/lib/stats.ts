@@ -170,8 +170,7 @@ export function tournamentStats(ts: TournamentSession[]): TournamentStats {
 }
 
 export const BUY_IN_BANDS = [
-  { label: '< 50 €', min: 0, max: 50 },
-  { label: '50–149 €', min: 50, max: 150 },
+  { label: '< 150 €', min: 0, max: 150 },
   { label: '150–499 €', min: 150, max: 500 },
   { label: '500 €+', min: 500, max: Infinity },
 ] as const;

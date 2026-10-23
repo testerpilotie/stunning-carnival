@@ -93,7 +93,7 @@ describe('tournamentStats', () => {
     expect(s.entries).toBe(5);
   });
   it('bands and histogram', () => {
-    expect(buyInBand(ts[0])).toBe('50–149 €');
+    expect(buyInBand(ts[0])).toBe('< 150 €');
     expect(buyInBand(ts[3])).toBe('500 €+');
     const h = finishHistogram(ts);
     expect(h[0]).toBe(1);

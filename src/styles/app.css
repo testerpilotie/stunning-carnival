@@ -172,9 +172,8 @@ tr:last-child td { border-bottom: 0; }
 .legend i { display: inline-block; width: 14px; height: 2px; border-radius: 1px; }
 .legend i.box { height: 10px; width: 10px; border-radius: 2px; }
 
-.filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin: 0 -16px 12px; padding-left: 16px; padding-right: 16px; scrollbar-width: none; }
-.filters::-webkit-scrollbar { display: none; }
-.filters select { min-height: 38px; border-radius: 999px; border: 1px solid var(--hairline); background: var(--surface); padding: 0 12px; font-size: 14px; font-weight: 600; flex: none; }
+.filters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.filters select { min-height: 40px; min-width: 0; width: 100%; border-radius: 999px; border: 1px solid var(--hairline); background: var(--surface); padding: 0 12px; font-size: 14px; font-weight: 600; text-overflow: ellipsis; }
 .filters select.on { border-color: var(--accent); color: var(--accent); }
 
 .kv { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--hairline); font-size: 15px; }
