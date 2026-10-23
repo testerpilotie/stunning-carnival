@@ -135,3 +135,11 @@ describe('tournamentStats with rebuys', () => {
     expect(s.rebuys).toBe(1);
   });
 });
+
+describe('expenses', () => {
+  it('are totalled in EUR and kept out of the result', () => {
+    const t = totals([cash({ cashOut: 300, expenses: 50 }), cash({ currency: 'USD', fxToEur: 0.9, buyIns: [{ at: T0, amount: 200 }], cashOut: 200, expenses: 100 })]);
+    expect(t.result).toBe(100);
+    expect(t.expenses).toBeCloseTo(140);
+  });
+});

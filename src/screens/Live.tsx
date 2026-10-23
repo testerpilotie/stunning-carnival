@@ -123,22 +123,7 @@ export function Live({ id }: { id: number }) {
       {dialog === 'stack' && (
         <AmountSheet title="Stack check" label={s.kind === 'cash' ? 'Current stack' : 'Chips'} currency={s.kind === 'cash' ? s.currency : 'EUR'} confirm="Save" initial={lastStack} onClose={close} onSubmit={(v) => { addStackCheck(id, v); close(); }} />
       )}
-      {dialog === 'cashout' && s.kind === 'cash' && (
-        <AmountSheet
-          title="Cash out"
-          label="Cashing out with"
-          currency={s.currency}
-          confirm="End session"
-          allowZero
-          initial={lastStack}
-          quick={[0, ...(lastStack ? [lastStack] : []), cashBuyInTotal(s)]}
-          onClose={close}
-          onSubmit={async (v) => {
-            await endCash(id, v);
-            go(`/done/${id}`, true);
-          }}
-        />
-      )}
+      {dialog === 'cashout' && s.kind === 'cash' && <CashOutSheet s={s} lastStack={lastStack} onClose={close} />}
       {dialog === 'mttRebuy' && s.kind === 'tournament' && (
         <AmountSheet
           title="Rebuy"
@@ -269,7 +254,46 @@ function TournamentPanel({ s, lastStack, setDialog, onReEntry }: { s: Tournament
   );
 }
 
+const EXPENSES_HINT = 'Travel, food, hotel. Kept out of the poker result.';
+
+function CashOutSheet({ s, lastStack, onClose }: { s: CashSession; lastStack?: number; onClose: () => void }) {
+  const [cashOut, setCashOut] = useState<number | undefined>(lastStack);
+  const [expenses, setExpenses] = useState<number | undefined>(s.expenses || undefined);
+  const ok = cashOut !== undefined && cashOut >= 0;
+  return (
+    <Sheet title="Cash out" onClose={onClose}>
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (!ok) return;
+          await endCash(s.id!, cashOut!, expenses ?? 0);
+          go(`/done/${s.id}`, true);
+        }}
+      >
+        <MoneyField label="Cashing out with" value={cashOut} onChange={setCashOut} currency={s.currency} autoFocus />
+        <div className="keypad-quick">
+          {[...new Set([0, ...(lastStack ? [lastStack] : []), cashBuyInTotal(s)])].map((q) => (
+            <button type="button" key={q} onClick={() => setCashOut(q)}>
+              {money(q, s.currency)}
+            </button>
+          ))}
+        </div>
+        <MoneyField label="Expenses (optional)" value={expenses} onChange={setExpenses} currency={s.currency} hint={EXPENSES_HINT} placeholder="0" />
+        <div className="row">
+          <button type="button" className="btn" onClick={onClose}>
+            Cancel
+          </button>
+          <button className="btn primary" disabled={!ok}>
+            End session
+          </button>
+        </div>
+      </form>
+    </Sheet>
+  );
+}
+
 function FinishSheet({ s, cashed, onClose }: { s: TournamentSession; cashed: boolean; onClose: () => void }) {
+  const [expenses, setExpenses] = useState<number | undefined>(s.expenses || undefined);
   const [finish, setFinish] = useState<number>();
   const [field, setField] = useState<number | undefined>(s.fieldSize);
   const [prize, setPrize] = useState<number | undefined>(cashed ? undefined : 0);
@@ -280,7 +304,7 @@ function FinishSheet({ s, cashed, onClose }: { s: TournamentSession; cashed: boo
         onSubmit={async (e) => {
           e.preventDefault();
           if (!ok) return;
-          await endTournament(s.id!, { prize: prize ?? 0, finish, fieldSize: field });
+          await endTournament(s.id!, { prize: prize ?? 0, finish, fieldSize: field, expenses: expenses ?? 0 });
           go(`/done/${s.id}`, true);
         }}
       >
@@ -290,6 +314,7 @@ function FinishSheet({ s, cashed, onClose }: { s: TournamentSession; cashed: boo
           <IntField label="Of (entries)" value={field} onChange={setField} />
         </div>
         <p className="hint" style={{ marginTop: -6 }}>Finish and field size drive your finish-percentile stats. Leave blank if unknown.</p>
+        <MoneyField label="Expenses (optional)" value={expenses} onChange={setExpenses} currency={s.currency} hint={EXPENSES_HINT} placeholder="0" />
         <div className="row">
           <button type="button" className="btn" onClick={onClose}>
             Cancel

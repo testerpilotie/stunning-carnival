@@ -162,6 +162,7 @@ function Overview({ ss, showSplit }: { ss: Session[]; showSplit: boolean }) {
   const mtt = ss.filter((s) => s.kind === 'tournament');
   const split = showSplit && cash.length > 0 && mtt.length > 0;
   const months = monthly(ss);
+  const withExpenses = ss.filter((s) => s.expenses > 0).length;
   return (
     <>
       <div className="card">
@@ -169,7 +170,6 @@ function Overview({ ss, showSplit }: { ss: Session[]; showSplit: boolean }) {
         <div className={`hero ${tone(t.result)}`}>{signed(t.result, true)}</div>
         <div className="hint" style={{ marginBottom: 12 }}>
           {t.sessions} sessions · {hoursShort(t.hours)}
-          {t.expenses > 0 && <> · after expenses <span className={tone(t.result - t.expenses)}>{signed(t.result - t.expenses, true)}</span></>}
         </div>
         <LineChart
           label="Cumulative result"
@@ -189,6 +189,12 @@ function Overview({ ss, showSplit }: { ss: Session[]; showSplit: boolean }) {
       <div className="tiles" style={{ marginBottom: 12 }}>
         <Tile label="Per hour" value={t.perHour !== undefined ? signed(t.perHour, true) : '–'} toneClass={tone(t.perHour)} note="all play, per hour seated" />
         <Tile label="Winning sessions" value={percent(t.winningSessions / t.sessions)} note={`${t.winningSessions} of ${t.sessions}`} />
+        {t.expenses > 0 && (
+          <>
+            <Tile label="Expenses" value={moneyRound(t.expenses)} note={`${withExpenses} sessions · avg ${moneyRound(t.expenses / withExpenses)}`} />
+            <Tile label="Net after expenses" value={signed(t.result - t.expenses, true)} toneClass={tone(t.result - t.expenses)} note="poker result minus expenses" />
+          </>
+        )}
         <Tile label="Best session" value={signed(t.best, true)} toneClass={tone(t.best)} />
         <Tile label="Worst session" value={signed(t.worst, true)} toneClass={tone(t.worst)} />
         <Tile

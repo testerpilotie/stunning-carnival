@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
-import { hoursPlayed, investedEur, resultEur, resultLocal } from '../lib/calc';
+import { expensesEur, hoursPlayed, investedEur, resultEur, resultLocal } from '../lib/calc';
 import { headline, subline, useData } from '../lib/data';
 import { duration, money, percent, signed, signedPercent, tone } from '../lib/format';
 import { go } from '../lib/router';
@@ -23,12 +23,17 @@ export function Done({ id }: { id: number }) {
         <div className={`hero ${tone(r)}`} style={{ margin: '8px 0 4px' }}>
           {signed(r)}
         </div>
+        {s.expenses > 0 && (
+          <div className="hint">
+            Expenses {money(expensesEur(s))} · after expenses <span className={tone(r - expensesEur(s))}>{signed(r - expensesEur(s))}</span>
+          </div>
+        )}
         {s.currency !== 'EUR' && <div className="hint">{signed(resultLocal(s)).replace('€', s.currency)} at {s.fxToEur} €/{s.currency}</div>}
       </div>
       <div className="tiles" style={{ marginBottom: 12 }}>
         <Tile label="Played" value={duration(h)} />
         {s.kind === 'cash' ? (
-          <Tile label="Per hour" value={h > 0 ? signed(r / h, true) : '–'} toneClass={tone(r)} />
+          <Tile label="Per hour" value={h >= 0.25 ? signed(r / h, true) : '–'} note={h < 0.25 ? 'too short to rate' : undefined} toneClass={h >= 0.25 ? tone(r) : ''} />
         ) : (
           <Tile label="ROI" value={signedPercent(r / investedEur(s))} toneClass={tone(r)} />
         )}

@@ -1,7 +1,7 @@
 import type { Session, Venue } from '../db/schema';
-import { hoursPlayed, resultEur } from '../lib/calc';
+import { expensesEur, hoursPlayed, resultEur } from '../lib/calc';
 import { headline, subline } from '../lib/data';
-import { date, duration, signed, tone } from '../lib/format';
+import { date, duration, money, signed, tone } from '../lib/format';
 
 export function SessionRow({ s, venueById }: { s: Session; venueById: Map<number, Venue> }) {
   const r = resultEur(s);
@@ -23,6 +23,7 @@ export function SessionRow({ s, venueById }: { s: Session; venueById: Map<number
         <span className={`amt ${live ? '' : tone(r)}`}>
           {live ? 'LIVE' : signed(r)}
           <small>{duration(hoursPlayed(s))}</small>
+          {s.expenses > 0 && <small>exp. {money(Math.round(expensesEur(s)))}</small>}
         </span>
       </a>
     </li>

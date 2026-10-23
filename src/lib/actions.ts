@@ -89,21 +89,23 @@ export const addBounty = (id: number, amount: number) =>
     if (s.kind === 'tournament') s.bountiesWon += amount;
   });
 
-export const endCash = (id: number, cashOut: number) =>
+export const endCash = (id: number, cashOut: number, expenses?: number) =>
   mutate(id, (s) => {
     if (s.kind !== 'cash') return;
     const now = Date.now();
     closeBreak(s, now);
     s.cashOut = cashOut;
+    if (expenses !== undefined) s.expenses = expenses;
     s.endedAt = now;
     s.status = 'done';
   });
 
-export const endTournament = (id: number, r: { prize: number; finish?: number; fieldSize?: number }) =>
+export const endTournament = (id: number, r: { prize: number; finish?: number; fieldSize?: number; expenses?: number }) =>
   mutate(id, (s) => {
     if (s.kind !== 'tournament') return;
     const now = Date.now();
     closeBreak(s, now);
+    if (r.expenses !== undefined) s.expenses = r.expenses;
     s.prize = r.prize;
     s.finish = r.finish;
     s.fieldSize = r.fieldSize ?? s.fieldSize;
