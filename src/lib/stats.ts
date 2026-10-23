@@ -224,6 +224,25 @@ export function groupBy(sessions: Session[], keyOf: (s: Session) => string): Gro
     .sort((a, b) => b.result - a.result);
 }
 
+export interface StakeGroup extends Group {
+  sb: number;
+  bb: number;
+  bbPerHour: number | undefined;
+}
+
+/** "1/2", or "1/2 USD" so the same blinds in another currency stay a separate game. */
+export const stakeKey = (s: CashSession) => stakeLabel(s) + (s.currency === 'EUR' ? '' : ` ${s.currency}`);
+
+/** Cash results per blind level, smallest stakes first. */
+export function byStake(ss: CashSession[]): StakeGroup[] {
+  return groupBy(ss, (s) => stakeKey(s as CashSession))
+    .map((g) => {
+      const members = ss.filter((s) => stakeKey(s) === g.key);
+      return { ...g, sb: members[0].sb, bb: members[0].bb, bbPerHour: bbPerHour(members) };
+    })
+    .sort((a, b) => a.bb - b.bb || a.sb - b.sb || a.key.localeCompare(b.key));
+}
+
 export const monthKey = (t: number) => {
   const d = new Date(t);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;

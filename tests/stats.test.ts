@@ -3,6 +3,7 @@ import {
   bankrollSeries,
   bbPerHour,
   buyInBand,
+  byStake,
   cumulative,
   drawdown,
   finishHistogram,
@@ -141,5 +142,29 @@ describe('expenses', () => {
     const t = totals([cash({ cashOut: 300, expenses: 50 }), cash({ currency: 'USD', fxToEur: 0.9, buyIns: [{ at: T0, amount: 200 }], cashOut: 200, expenses: 100 })]);
     expect(t.result).toBe(100);
     expect(t.expenses).toBeCloseTo(140);
+  });
+});
+
+describe('byStake', () => {
+  const ss = [
+    cash({ sb: 2, bb: 5, buyIns: [{ at: T0, amount: 500 }], cashOut: 600 }), // +100 in 4 h = +20 bb
+    cash({ cashOut: 280 }), // 1/2 EUR +80
+    cash({ cashOut: 120 }), // 1/2 EUR -80
+    cash({ currency: 'USD', fxToEur: 0.9, cashOut: 300 }), // 1/2 USD +100 USD = +90 €
+  ];
+  const g = byStake(ss);
+  it('orders by blind size and keeps currencies apart', () => {
+    expect(g.map((x) => x.key)).toEqual(['1/2', '1/2 USD', '2/5']);
+  });
+  it('per-hour and bb/h per level', () => {
+    const eur12 = g.find((x) => x.key === '1/2')!;
+    expect(eur12.sessions).toBe(2);
+    expect(eur12.result).toBe(0);
+    const s25 = g.find((x) => x.key === '2/5')!;
+    expect(s25.perHour).toBeCloseTo(25);
+    expect(s25.bbPerHour).toBeCloseTo(5);
+    const usd = g.find((x) => x.key === '1/2 USD')!;
+    expect(usd.result).toBeCloseTo(90);
+    expect(usd.bbPerHour).toBeCloseTo(12.5);
   });
 });

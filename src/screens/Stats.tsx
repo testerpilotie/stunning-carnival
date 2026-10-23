@@ -7,6 +7,7 @@ import {
   BUY_IN_BANDS,
   bbPerHour,
   buyInBand,
+  byStake,
   cumulative,
   drawdown,
   finishHistogram,
@@ -16,6 +17,7 @@ import {
   totals,
   tournamentStats,
   type Group,
+  type StakeGroup,
 } from '../lib/stats';
 import { BarChart } from '../components/charts/BarChart';
 import { LineChart } from '../components/charts/LineChart';
@@ -259,10 +261,59 @@ function Cash({ ss, venueById }: { ss: CashSession[]; venueById: Map<number, Ven
         <Tile label="Hours" value={hoursShort(t.hours)} note={`${t.sessions} sessions · avg ${hoursShort(t.hours / t.sessions)}`} />
       </div>
       {est && <ConfidenceCard est={est} />}
-      <GroupCard title="By stake" groups={groupBy(ss, (s) => `${s.game} ${stakeLabel(s as CashSession)}`)} mode="hourly" />
+      <StakeCard groups={byStake(ss)} />
       <GroupCard title="By venue" groups={groupBy(ss, (s) => (s.venueId ? venueById.get(s.venueId)?.name ?? '?' : 'No venue'))} mode="hourly" />
       <GroupCard title="By session length" groups={lengthGroups(ss)} mode="hourly" keepOrder />
     </>
+  );
+}
+
+function StakeCard({ groups }: { groups: StakeGroup[] }) {
+  if (!groups.length) return null;
+  const bbh = (v: number | undefined) => (v === undefined ? '–' : (v > 0 ? '+' : '') + number(Math.round(v * 10) / 10));
+  return (
+    <div className="card">
+      <h2>€/h by blind size</h2>
+      {groups.length > 1 && (
+        <BarChart
+          label="Hourly result by blind size"
+          diverging
+          height={160}
+          bars={groups.map((g) => ({ key: g.key, label: g.key, v: Math.round(g.perHour ?? 0) }))}
+          format={(v) => `${signed(v, true)}/h`}
+          detail={(b) => {
+            const g = groups.find((x) => x.key === b.key)!;
+            return `${g.sessions} sessions · ${hoursShort(g.hours)} · ${bbh(g.bbPerHour)} bb/h`;
+          }}
+        />
+      )}
+      <div className="table-wrap" style={{ marginTop: groups.length > 1 ? 8 : 0 }}>
+        <table>
+          <thead>
+            <tr>
+              <th>Blinds</th>
+              <th className="r">#</th>
+              <th className="r">Hours</th>
+              <th className="r">Result</th>
+              <th className="r">€/h</th>
+              <th className="r">bb/h</th>
+            </tr>
+          </thead>
+          <tbody>
+            {groups.map((g) => (
+              <tr key={g.key}>
+                <td>{g.key}</td>
+                <td className="r">{g.sessions}</td>
+                <td className="r">{number(Math.round(g.hours * 10) / 10)}</td>
+                <td className={`r ${tone(g.result)}`}>{signed(g.result, true)}</td>
+                <td className={`r ${tone(g.perHour)}`}>{signed(g.perHour, true)}</td>
+                <td className={`r ${tone(g.bbPerHour)}`}>{bbh(g.bbPerHour)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
 
