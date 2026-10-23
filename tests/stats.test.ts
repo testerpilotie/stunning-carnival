@@ -8,7 +8,6 @@ import {
   finishHistogram,
   hourlyEstimate,
   monthly,
-  recentMedian,
   totals,
   tournamentStats,
 } from '../src/lib/stats';
@@ -24,10 +23,6 @@ describe('drawdown', () => {
     expect(d.peakAt).toBe(3);
     expect(d.troughAt).toBe(4);
     expect(d.recoveredAt).toBe(6);
-    expect(d.current).toBe(40);
-  });
-  it('underwater is never positive', () => {
-    expect(drawdown(pts).underwater.every((p) => p.v <= 0)).toBe(true);
   });
   it('has no recovery while still under the old peak', () => {
     const d = drawdown([0, 100, -50, 20].map((v, i) => ({ t: i, v })));
@@ -129,10 +124,6 @@ describe('bankroll', () => {
   });
   it('ignores live sessions', () => {
     expect(bankrollSeries([cash({ status: 'live' })], [], 100)).toEqual([]);
-  });
-  it('recentMedian', () => {
-    expect(recentMedian([1, 9, 3, 7])).toBe(5);
-    expect(recentMedian([])).toBeUndefined();
   });
 });
 

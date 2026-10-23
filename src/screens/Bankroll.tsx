@@ -1,20 +1,11 @@
 import { useState } from 'react';
 import { db, updateSettings } from '../db/db';
-import type { CashSession, Transaction, TournamentSession } from '../db/schema';
-import { entryCostEur, toEur } from '../lib/calc';
+import type { Transaction } from '../db/schema';
 import { useData } from '../lib/data';
-import { date, money, moneyRound, number, signed } from '../lib/format';
-import { bankrollSeries, currentBankroll, recentMedian } from '../lib/stats';
+import { date, money, moneyRound, signed } from '../lib/format';
+import { bankrollSeries, currentBankroll } from '../lib/stats';
 import { LineChart } from '../components/charts/LineChart';
 import { MoneyField, Seg, Sheet, Top } from '../components/ui';
-
-/** Common rules of thumb for live play; shown as guidance, not as a verdict. */
-function cover(buyIns: number, kind: 'cash' | 'mtt') {
-  const [thin, ok] = kind === 'cash' ? [15, 30] : [50, 100];
-  if (buyIns < thin) return { icon: '▲', label: 'Thin', cls: 'neg' };
-  if (buyIns < ok) return { icon: '●', label: 'OK', cls: '' };
-  return { icon: '✓', label: 'Solid', cls: 'pos' };
-}
 
 export function Bankroll() {
   const { sessions, transactions, settings, loaded } = useData();
@@ -24,9 +15,6 @@ export function Bankroll() {
 
   const br = currentBankroll(sessions, transactions, settings.startingBankroll);
   const series = bankrollSeries(sessions, transactions, settings.startingBankroll);
-  const done = sessions.filter((s) => s.status === 'done').sort((a, b) => a.startedAt - b.startedAt);
-  const cashBI = recentMedian(done.filter((s): s is CashSession => s.kind === 'cash').map((s) => toEur(s, s.buyIns[0]?.amount ?? 0)));
-  const mttBI = recentMedian(done.filter((s): s is TournamentSession => s.kind === 'tournament').map(entryCostEur));
 
   return (
     <>
@@ -42,15 +30,6 @@ export function Bankroll() {
         </div>
         <LineChart label="Bankroll over time" area format={(v) => moneyRound(v)} series={[{ name: 'Bankroll', color: 'var(--series-1)', points: series }]} />
       </div>
-
-      {(cashBI || mttBI) && br > 0 && (
-        <div className="card">
-          <h2>Buy-ins in the bankroll</h2>
-          {cashBI ? <Cover label={`Cash, usual buy-in ${moneyRound(cashBI)}`} n={br / cashBI} kind="cash" /> : null}
-          {mttBI ? <Cover label={`Tournaments, usual entry ${moneyRound(mttBI)}`} n={br / mttBI} kind="mtt" /> : null}
-          <p className="hint" style={{ margin: '8px 0 0' }}>Usual = median of your last 10. Rules of thumb for live play: 30+ cash buy-ins, 100+ tournament entries.</p>
-        </div>
-      )}
 
       <div className="section-title" style={{ display: 'flex', justifyContent: 'space-between' }}>
         <span>Deposits & withdrawals</span>
@@ -92,18 +71,6 @@ export function Bankroll() {
       {adding && <TxSheet onClose={() => setAdding(false)} />}
       {editStart && <StartSheet initial={settings.startingBankroll} onClose={() => setEditStart(false)} />}
     </>
-  );
-}
-
-function Cover({ label, n, kind }: { label: string; n: number; kind: 'cash' | 'mtt' }) {
-  const c = cover(n, kind);
-  return (
-    <div className="kv">
-      <span className="k">{label}</span>
-      <span className="v">
-        {number(Math.floor(n))} <span className={c.cls}>{c.icon} {c.label}</span>
-      </span>
-    </div>
   );
 }
 

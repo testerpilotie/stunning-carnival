@@ -196,7 +196,6 @@ function Overview({ ss, showSplit }: { ss: Session[]; showSplit: boolean }) {
           value={dd.max ? `−${moneyRound(dd.max)}` : '–'}
           note={dd.peakAt && dd.troughAt ? `${date(dd.peakAt)} → ${date(dd.troughAt)}${dd.recoveredAt ? '' : ' · not recovered'}` : undefined}
         />
-        <Tile label="Below peak now" value={dd.current > 0 ? `−${moneyRound(dd.current)}` : 'At peak'} toneClass={dd.current > 0 ? 'neg' : 'pos'} />
       </div>
       {months.length > 1 && (
         <div className="card">
@@ -207,14 +206,6 @@ function Overview({ ss, showSplit }: { ss: Session[]; showSplit: boolean }) {
             bars={months.map((m) => ({ key: m.key, label: monthLabel(m.key, false), title: monthLabel(m.key), v: m.v }))}
             format={(v) => signed(v, true)}
           />
-        </div>
-      )}
-      {dd.max > 0 && (
-        <div className="card">
-          <h2>
-            Distance from peak <span className="sub">· drawdown</span>
-          </h2>
-          <LineChart label="Drawdown from running peak" height={140} area format={(v) => (v ? `−${moneyRound(-v)}` : 'At peak')} series={[{ name: 'Drawdown', color: 'var(--div-neg)', points: dd.underwater }]} />
         </div>
       )}
       <WeekdayCard ss={ss} />

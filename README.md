@@ -8,13 +8,13 @@ An offline-first web app (PWA) for logging live cash games and tournaments from 
 - **Tournaments first-class.** Buy-in split into prize pool and fee, re-entries (buy-in + fee each), rebuys (cost you enter, no fee), add-ons, bounties, finish position vs field size, guarantee, and format tags.
 - **Stats.**
   - €/h, big blinds per hour, and a 95% confidence interval on your true hourly rate. It tells you whether your sample can already separate a winner from a loser.
-  - Max downswing and its dates, plus a distance-from-peak chart.
+  - Max downswing and its dates.
   - Monthly results and results by weekday.
   - ROI and ITM, ROI by buy-in band, and a finish-position histogram.
   - Breakdowns by stake, venue, country, format and session length.
   - Filters for date range, type, venue, game, stake, buy-in band and tag.
 - **Travel.** Each session has its own currency and a fixed FX rate to EUR, which you can fetch with one tap when online. All stats are in EUR.
-- **Bankroll.** Starting amount, deposits and withdrawals, a bankroll graph, and how many of your usual buy-ins it covers.
+- **Bankroll.** Starting amount, deposits and withdrawals, and a bankroll graph.
 - **Your data.** JSON backup and restore, plus CSV export (semicolon-separated with decimal commas, so it opens cleanly in Finnish-locale Sheets and Excel).
 
 ## Install on your phone

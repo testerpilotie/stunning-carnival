@@ -65,10 +65,6 @@ export interface Drawdown {
   troughAt?: number;
   /** When the series got back above the old peak, if it has. */
   recoveredAt?: number;
-  /** How far below the all-time high the series is now. */
-  current: number;
-  /** Distance below the running peak at every point (≤ 0). */
-  underwater: Point[];
 }
 
 export function drawdown(series: Point[]): Drawdown {
@@ -79,7 +75,6 @@ export function drawdown(series: Point[]): Drawdown {
   let maxPeakAt: number | undefined;
   let troughAt: number | undefined;
   let recoveredAt: number | undefined;
-  const underwater: Point[] = [];
   for (const p of series) {
     if (p.v > peak) {
       peak = p.v;
@@ -87,7 +82,6 @@ export function drawdown(series: Point[]): Drawdown {
     }
     if (troughAt !== undefined && recoveredAt === undefined && p.t > troughAt && p.v >= maxPeak) recoveredAt = p.t;
     const dd = peak - p.v;
-    underwater.push({ t: p.t, v: -dd });
     if (dd > max) {
       max = dd;
       maxPeak = peak;
@@ -96,8 +90,7 @@ export function drawdown(series: Point[]): Drawdown {
       recoveredAt = undefined;
     }
   }
-  const last = series[series.length - 1];
-  return { max, peakAt: maxPeakAt, troughAt, recoveredAt, current: last ? peak - last.v : 0, underwater };
+  return { max, peakAt: maxPeakAt, troughAt, recoveredAt };
 }
 
 export interface HourlyEstimate {
@@ -283,14 +276,6 @@ export function currentBankroll(sessions: Session[], txs: Transaction[], start: 
     sum(sessions.filter((s) => s.status === 'done').map(resultEur)) +
     sum(txs.map((x) => (x.type === 'deposit' ? x.amount : -x.amount)))
   );
-}
-
-/** Median of the latest n values, used for "typical buy-in". */
-export function recentMedian(values: number[], n = 10): number | undefined {
-  const xs = values.slice(-n).sort((a, b) => a - b);
-  if (!xs.length) return undefined;
-  const mid = Math.floor(xs.length / 2);
-  return xs.length % 2 ? xs[mid] : (xs[mid - 1] + xs[mid]) / 2;
 }
 
 export { stakeLabel };
